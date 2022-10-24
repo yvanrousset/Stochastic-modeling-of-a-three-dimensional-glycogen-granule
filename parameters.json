@@ -1,0 +1,18 @@
+{
+  "GBE": 1.0,
+  "GS": 0.2,
+  "GDE": 0.0,
+  "GP": 0.0,
+  "number_of_glucose_to_be_fixed": 5000,
+  "max_number_of_timestep": 50,
+  "number_of_glucose_in_the_system": 5000,
+  "size_spec_gys": 2,
+  "size_spec_pygl": 2,
+  "size_spec_gbe_spacing": 1,
+  "size_spec_gbe_leftover": 3,
+  "size_spec_gbe_transferred": 3,
+  "size_spec_gde": 3,
+  "model_for_gbe": "flexible_location_model",
+  "b": 5.4, 
+  "r_GN":11.87
+}
