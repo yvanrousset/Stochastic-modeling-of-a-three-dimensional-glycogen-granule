@@ -127,8 +127,38 @@ class glycogen_structure:
                         return False
         return True
     
+    def Gillespie_step_ma(self) -> tuple:
+        ''' This functions takes concentrations of the enzymes and the structure info of a glycogen granules and
+        return what is the next reaction to occurs and which time has been spent. (Following a gillespie algorithm)
+        Assuming mass action kinetics
+        '''
+
+        #propensity assuming mass action kinetics
+        h_gs  = self.parameters['GS']*len(self.Find_chain_for_gs())
+        h_gp  = self.parameters["GP"]*len(self.Find_chain_for_gp())
+        h_gbe = self.parameters["GBE"]*len(self.Find_chain_for_gbe())
+        h_gde = self.parameters["GDE"]*len(self.Find_chain_for_gde())
+        
+        a = h_gs + h_gp + h_gbe + h_gde
+        
+        if a == 0:
+            return "no reaction can be proceed, all propensities are zero",0
+        r2=random.uniform(0,a)    
+        r1=random.uniform(0,1)	
+        
+        d_t = (1/a)*math.log(1/r1)
+        if r2 < h_gs :
+            return ("Act_gs",d_t)
+        if r2 >= h_gs and r2 < h_gs + h_gp :
+            return ("Act_gp",d_t)
+        if r2 >=  h_gs + h_gp  and r2 < h_gs + h_gp + h_gbe :
+            return ("Act_gbe",d_t)
+        if r2 >=  h_gs + h_gp + h_gbe  and r2 < h_gs + h_gp + h_gbe + +h_gde:
+            return ("Act_gde",d_t)          
+
+
     ##############################################
-    #acting function
+    # Functions that try to perform a change in the structure after a reactions was picked
     def Act_gs(self, selected_chain_index = None)-> bool:
         if selected_chain_index == None:
             selected_chain_index = random.choice(self.Find_chain_for_gs())
