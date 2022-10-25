@@ -6,7 +6,6 @@ Created on Tue May 10 11:45:36 2022
 @author: yvan
 """
 
-
 import math
 import numpy as np
 from pylab import *
@@ -17,27 +16,29 @@ import random
 import json
 
 class glycogen_structure:
-    ''' insert class description here
+    ''' This class generate glycogen granule. Its structural informations is stored in the information dictionary
+        where keys correspond to chains name, and values are dictionary containings their identity, status, genration
+        conectivity information (identity of mother and daughters) and location of the glucoses units on the chains
     '''   
     
     def __init__(self, dictio = {}, initial_number_of_chains:int = 2, l:float = 1):
-        #with open("parameters.json", "r") as f:
-            #self.parameters = json.load(f)   
-             
-             
+        '''By default, there are two chains that point in oposite directions from the surface of a sphere
+        with radius r_gn, which coresponds to the GN protein.
+        l = 1, by default, is the unitless distance between two glucoses units organised in a single helix
+        '''
+ 
         self.parameters = dictio
 
-        #print(self.parameters)
         r_gn = self.parameters['r_GN']
-        d = {}
+        info = {}
         for i in range(initial_number_of_chains):
             if i == 0:
-                d["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
+                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
                                  "glucose_location":[[0,0,r_gn], [0,0,r_gn+1], [0,0,r_gn+2], [0,0,r_gn+3], [0,0,r_gn+4]]}
             else:
-                d["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None,"identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
+                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None,"identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
                                  "glucose_location":[[0,0,-r_gn], [0,0,-r_gn-1] ,[0,0,-r_gn-2] ,[0,0,-r_gn-3], [0,0,-r_gn-4]]}            
-        self.information = d
+        self.information = info
         self.distance_between_units = l
     
 
@@ -69,7 +70,7 @@ class glycogen_structure:
         return len(self.information)
 
     ###############################################
-    # all methods that "find" something in the data
+    # All methods that "find" something in the data
     def Find_chain_for_gs(self) -> list:
         '''This function look into the information of the structure and return the chains that are possible substrate for gs
         It is done by returning the identity of the chains that dont have status '0' which correspond to dp that are to short to bind GS
@@ -96,9 +97,7 @@ class glycogen_structure:
         return list_chains_substrate_for_gp
     
     def Find_chain_for_gde(self) -> list:
-        list_chains_substrate_for_gde = []
-        #self.parameters["size_spec_gde"]
-        
+        list_chains_substrate_for_gde = []     
         for chain in self.information.values():
             if chain["status"] == 1:
                 list_chains_substrate_for_gde.append(chain["identity"])           
@@ -127,6 +126,9 @@ class glycogen_structure:
                         return False
         return True
     
+    def Torsion_function(self):
+        pass
+
     def Gillespie_step_ma(self) -> tuple:
         ''' This functions takes concentrations of the enzymes and the structure info of a glycogen granules and
         return what is the next reaction to occurs and which time has been spent. (Following a gillespie algorithm)
@@ -147,6 +149,7 @@ class glycogen_structure:
         r1=random.uniform(0,1)	
         
         d_t = (1/a)*math.log(1/r1)
+
         if r2 < h_gs :
             return ("Act_gs",d_t)
         if r2 >= h_gs and r2 < h_gs + h_gp :
@@ -193,7 +196,7 @@ class glycogen_structure:
         
         except IndexError:
             return False 
-        
+  
     
     def Act_gbe_flexible_model(self)-> bool:  
         if self.Find_chain_for_gbe() == []:
@@ -270,11 +273,6 @@ class glycogen_structure:
                     self.information['chain'+str(index+1)]['glucose_location'].append([X[k],Y[k],Z[k]]) 
                 self.information['chain'+str(index+1)]['identity_of_mother'] = selected_chain_index
                 new_chain = self.information['chain'+str(index+1)]
-                #print(new_chain)
-
-                #print('identities',(new_chain['identity'],chain['identity']))
-
-            #update previous chain
 
                 self.information['chain'+str(selected_chain_index)]['identity_of_daughter'].append(index+1)
                 self.information['chain'+str(selected_chain_index)]['position_of_daughter'].append(indice_where_to_branch)
