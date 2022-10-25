@@ -741,6 +741,13 @@ class glycogen_structure:
 
         return occupancy_list
 
+
+    def time_course(self, time, external_parameters):
+        pass
+
+
+
+# Some other usefull functions
 def chain_normed_vector(liste):
     return np.asarray(liste[-1])-np.asarray(liste[-2])
 
