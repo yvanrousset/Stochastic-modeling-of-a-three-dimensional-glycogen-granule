@@ -1,4 +1,4 @@
-# Stochastic modeling of a three dimensional glycogen granule
+# (ongoing) Stochastic modeling of a three dimensional glycogen granule
 
 This repository contains jupyter notebook scripts to reproduce all the figures presented in the article "Stochastic modeling of a three-dimensional glycogen granule and impact of the branching enzyme on the structure"
 
