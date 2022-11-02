@@ -33,10 +33,10 @@ class glycogen_structure:
         info = {}
         for i in range(initial_number_of_chains):
             if i == 0:
-                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
+                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], 
                                  "glucose_location":[[0,0,r_gn], [0,0,r_gn+1], [0,0,r_gn+2], [0,0,r_gn+3], [0,0,r_gn+4]]}
             else:
-                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None,"identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
+                info["chain"+str(i)] = {"identity":i, "status": 2, "generation":0 , "identity_of_mother":None,"identity_of_daughter":[], "position_of_daughter":[], 
                                  "glucose_location":[[0,0,-r_gn], [0,0,-r_gn-1] ,[0,0,-r_gn-2] ,[0,0,-r_gn-3], [0,0,-r_gn-4]]}            
         self.information = info
         self.distance_between_units = l
@@ -51,7 +51,7 @@ class glycogen_structure:
 
     def Create_a_Chain(self,index, status = None, generation = None):
         new_chain = {"identity":index, "status": status, "generation":generation , 
-                    "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], "unknown_param":1, 
+                    "identity_of_mother":None, "identity_of_daughter":[], "position_of_daughter":[], 
                     "glucose_location":[]}
         #print(index)
         self.information['chain'+str(index)] = new_chain
