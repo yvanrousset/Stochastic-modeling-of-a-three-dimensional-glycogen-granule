@@ -639,7 +639,8 @@ class glycogen_structure:
 
 
         XLIST,YLIST,ZLIST= 0.24*np.asarray(XLIST),  0.24*np.asarray(YLIST), 0.24* np.asarray(ZLIST)
-        ax=plt.figure().gca(projection='3d')
+        ax=plt.figure()
+        ax = ax.add_subplot(projection='3d')
         ax.plot(XLIST,YLIST,ZLIST,'o',markersize=7, markeredgewidth=0.2,markeredgecolor='black',label='glycogen 3d')
         #ax.view_init(elev=45, azim=45)
         ax.view_init(elev=15, azim=60)
