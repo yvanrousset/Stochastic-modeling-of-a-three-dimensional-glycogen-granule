@@ -92,7 +92,7 @@ class glycogen_structure:
     def Find_chain_for_gp(self) -> list:
         list_chains_substrate_for_gp = [];
         for chain in self.information.values():
-            if chain["status"] == (2 or 3):
+            if chain["status"] in [2, 3]:
                list_chains_substrate_for_gp.append(chain["identity"])
         return list_chains_substrate_for_gp
     
