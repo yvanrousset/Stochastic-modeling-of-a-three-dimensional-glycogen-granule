@@ -573,6 +573,8 @@ class glycogen_structure:
 
 
     def Act_gde(self)-> bool:
+        if self.Find_chain_for_gde() == []:
+            return False
         selected_chain_index = random.choice(self.Find_chain_for_gde()) 
         chain = self.Get_chain_from_identity(selected_chain_index)
         N = len(chain['glucose_location'])
@@ -581,6 +583,9 @@ class glycogen_structure:
             self.Act_gs(chain['identity_of_mother'])
         
         del self.information['chain'+str(selected_chain_index)]
+        del self.information['chain'+str(chain['identity_of_mother'])]['identity_of_daughter'][-1]
+        del self.information['chain'+str(chain['identity_of_mother'])]['position_of_daughter'][-1]
+        return True
         
     ##############################################
 
@@ -595,7 +600,7 @@ class glycogen_structure:
             ind = chain["position_of_daughter"][-1]+1
             
         if N-ind < self.parameters['size_spec_gys'] :
-            self.information['chain'+str(identity)]["status"] = 0
+            self.information['chain'+str(identity)]["status"] = 1 
         elif N-ind == self.parameters['size_spec_gys'] and len(self.information['chain'+str(identity)]["identity_of_daughter"])==0 :
             self.information['chain'+str(identity)]["status"] = 1
         elif N-ind <= self.parameters['size_spec_gbe_spacing'] + self.parameters['size_spec_gbe_leftover'] + self.parameters['size_spec_gbe_transferred'] :
