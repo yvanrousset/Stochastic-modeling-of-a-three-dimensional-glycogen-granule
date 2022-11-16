@@ -675,7 +675,7 @@ class glycogen_structure:
         N  = len(listex)
         xmean=1./N*sum(listex)
         ymean=1./N*sum(listey)
-        zmean=1./N*sum(listey)
+        zmean=1./N*sum(listez)
         
         r2=1.0/N*sum((listex-xmean*np.ones(N))**2+(listey-ymean*np.ones(N))**2+(listez-zmean*np.ones(N))**2)
         return alpha*r2**0.5, [xmean,ymean,zmean]       
