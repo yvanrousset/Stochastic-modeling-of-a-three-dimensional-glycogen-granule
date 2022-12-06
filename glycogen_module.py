@@ -99,7 +99,7 @@ class glycogen_structure:
     def Find_chain_for_gde(self) -> list:
         list_chains_substrate_for_gde = []     
         for chain in self.information.values():
-            if chain["status"] == 1:
+            if chain["status"] == 4:
                 list_chains_substrate_for_gde.append(chain["identity"])           
         return list_chains_substrate_for_gde
     #########################################################           
@@ -585,6 +585,7 @@ class glycogen_structure:
         del self.information['chain'+str(selected_chain_index)]
         del self.information['chain'+str(chain['identity_of_mother'])]['identity_of_daughter'][-1]
         del self.information['chain'+str(chain['identity_of_mother'])]['position_of_daughter'][-1]
+        
         return True
         
     ##############################################
@@ -602,7 +603,7 @@ class glycogen_structure:
         if N-ind < self.parameters['size_spec_gys'] :
             self.information['chain'+str(identity)]["status"] = 1
         elif N-ind == self.parameters['size_spec_gys'] and len(self.information['chain'+str(identity)]["identity_of_daughter"])==0 :
-            self.information['chain'+str(identity)]["status"] = 1
+            self.information['chain'+str(identity)]["status"] = 4
         elif N-ind <= self.parameters['size_spec_gbe_spacing'] + self.parameters['size_spec_gbe_leftover'] + self.parameters['size_spec_gbe_transferred'] :
             self.information['chain'+str(identity)]["status"] = 2
             
@@ -623,15 +624,15 @@ class glycogen_structure:
                 YLIST.append(pos[1])
                 ZLIST.append(pos[2])
 
-            for branching_index, daugther_index in zip(chain['position_of_daughter'],chain['identity_of_daughter']):
+            #for branching_index, daugther_index in zip(chain['position_of_daughter'],chain['identity_of_daughter']):
                 #print('identity:',chain['identity'],branching_index, daugther_index)
                 
-                x1 = chain['glucose_location'][branching_index]
-                daughter_chain = self.Get_chain_from_identity(daugther_index)    
+                #x1 = chain['glucose_location'][branching_index]
+                #daughter_chain = self.Get_chain_from_identity(daugther_index)    
                 #print('position_of_daughter',daughter_chain['position_of_daughter'])              
-                x2 = daughter_chain['glucose_location'][0]
+                #x2 = daughter_chain['glucose_location'][0]
 
-                alpha_segment.append([x1,x2])
+                #alpha_segment.append([x1,x2])
 
                 # if chain['identity'] == 0:
                 #     Xa.append(chain['glucose_location'][2][0])
