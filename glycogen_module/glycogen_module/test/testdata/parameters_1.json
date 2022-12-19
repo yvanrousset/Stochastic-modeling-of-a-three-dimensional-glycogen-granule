@@ -1,0 +1,13 @@
+{
+"GBE": 1.0,
+"GS": 0.2,
+"GDE": 0.0,
+"GP": 0.0,
+"l_gbe_spacing": 1,
+"l_gbe_leftover": 3,
+"l_gbe_transferred": 3,
+"model_for_gbe": "flexible_location_model",
+"radius_of_glucose_sphere": 5.4,
+"radius_of_gn_core": 11.87,
+"l_gs_min": 2
+}
