@@ -26,19 +26,19 @@ class Model(str, Enum):
         return self.value
 
 
-class Status(Enum):
+class Status(str, Enum):
     """Enum representing the status of a chain, showing which enzymatic reactions can take place."""
-    GS_SUBSTRATE = 0
-    GBE_SUBSTRATE = 1
-    GP_SUBSTRATE = 2
-    GDE_SUBSTRATE = 3
+    GS_SUBSTRATE = "GS_SUBSTRATE"
+    GBE_SUBSTRATE = "GBE_SUBSTRATE"
+    GP_SUBSTRATE = "GP_SUBSTRATE"
+    GDE_SUBSTRATE = "GDE_SUBSTRATE"
 
     @classmethod
     def help(cls) -> str:
         """Show help message."""
         msg = []
-        for i, m in enumerate(["elongation", "branching", "reduction", "debranching"]):
-            msg.append(f"{i}: {cls(i).name} (substrate for {m})")
+        for i, m in zip([Status.GS_SUBSTRATE, Status.GBE_SUBSTRATE, Status.GP_SUBSTRATE, Status.GDE_SUBSTRATE], ["elongation", "branching", "reduction", "debranching"]):
+            msg.append(f"{cls(i).name}: substrate for {m}")
         msg = "\n".join(msg)
         print(msg)
         return (msg)
@@ -61,6 +61,21 @@ class Chain:
 
     def get_num_daughters(self):
         return len(self.daughters_ids)
+
+    def _to_serializable(self):
+        return self.__dict__
+
+    @classmethod
+    def from_dct(cls, dct: dict):
+        return cls(
+            id=dct['id'],
+            substrate_status=[Status(v) for v in dct['substrate_status']],
+            generation=dct['generation'],
+            mother_id=dct['mother_id'],
+            daughters_ids=dct['daughters_ids'],
+            daughters_positions=dct['daughters_positions'],
+            glucose_positions=dct['glucose_positions']
+        )
 
 
 class GlycogenStructure:
@@ -86,7 +101,8 @@ class GlycogenStructure:
     DISTANCE_BETWEEN_GLUCOSE_UNITS = 1  # TODO: rename this to [...]MULTIPLIER
 
     @classmethod
-    def from_json_file(cls, file_path: Path | str):
+    def from_json_file(cls, file_path: Path | str, no_init=False):
+        """ If no_init is set to False, the initial chains will not be created. Use no_init when you are importing a snapshot of a simulation. """
         try:
             with open(file=file_path, mode='r') as infile:
                 result = json.load(infile)
@@ -95,10 +111,11 @@ class GlycogenStructure:
             print(
                 f"{e} - Could not load json from file with path '{file_path}'", file=sys.stderr)
             raise
-        return cls.from_dct(parameters_dct=result)
+        return cls.from_dct(parameters_dct=result, no_init=no_init)
 
     @classmethod
-    def from_dct(cls, parameters_dct: dict):
+    def from_dct(cls, parameters_dct: dict, no_init=False):
+        """ If no_init is set to True, the initial chains will not be created. Use no_init when you are importing a snapshot of a simulation. """
         lowercase_converted_dct = {
             k.lower(): v for k, v in parameters_dct.items()}
 
@@ -110,6 +127,14 @@ class GlycogenStructure:
                 f"{e}: {parameters_dct['model_for_gbe']} is not a valid model. Available models are: {available_models}", file=sys.stderr)
             raise ValueError
 
+        if no_init:
+            chains = []
+            tmp = lowercase_converted_dct['chains']
+            for t in tmp:
+                new_chain = Chain.from_dct(t)
+                chains.append(new_chain)
+        else:
+            chains = None
         return cls(
             gs=lowercase_converted_dct['gs'],
             gbe=lowercase_converted_dct['gbe'],
@@ -127,7 +152,8 @@ class GlycogenStructure:
             # distance_between_units=lowercase_converted_dct['distance_between_units'],
             # used in scan_excluded_volume
             radius_of_glucose_sphere=lowercase_converted_dct['radius_of_glucose_sphere'],
-            radius_of_gn_core=lowercase_converted_dct['radius_of_gn_core']
+            radius_of_gn_core=lowercase_converted_dct['radius_of_gn_core'],
+            chains=chains
         )
 
     def _create_initial_chains(self, num_chains: int):
@@ -191,7 +217,7 @@ class GlycogenStructure:
                  model_for_gbe: Model,
                  radius_of_glucose_sphere: float,
                  radius_of_gn_core: float,
-
+                 chains: list[Chain] = None
                  ) -> None:
         """
         - gs:float GS activity
@@ -230,8 +256,13 @@ class GlycogenStructure:
         self.radius_of_glucose_sphere = radius_of_glucose_sphere
         self.radius_of_gn_core = radius_of_gn_core
 
-        self.chains: list[Chain] = self._create_initial_chains(
-            GlycogenStructure.MAX_INITIAL_CHAINS)
+        # by default create inital chains
+        if chains is None:
+            self.chains: list[Chain] = self._create_initial_chains(
+                GlycogenStructure.MAX_INITIAL_CHAINS)
+        # if chains are passed as parameter, do not create inital chains, but use provided chains
+        else:
+            self.chains = chains
 
     def find_chains_for_gs(self) -> list[int]:
         return [c.id for c in self.chains if Status.GS_SUBSTRATE in c.substrate_status]
@@ -554,7 +585,8 @@ class GlycogenStructure:
 
         c = self.get_chain_by_id(chain_id)
         if c.mother_id is None:
-            raise Exception(f"Error during act_gde: Cannot de-branch chain {c.id} as it has no mother chain.")
+            raise Exception(
+                f"Error during act_gde: Cannot de-branch chain {c.id} as it has no mother chain.")
         if Status.GDE_SUBSTRATE not in c.substrate_status:
             raise Exception(f"Cannot use chain {chain_id} for GDE")
         N = len(c.glucose_positions)
@@ -583,6 +615,18 @@ class GlycogenStructure:
 
         return s
 
+    def export_to_file(self, filename: Path | str, format: str = 'json'):
+        available_formats = ['json']
+        params_dct = self.get_parameters_as_dct()
+        chains_dct = self.get_chains_as_dct()
+        result_dct = params_dct | chains_dct  # merge
+        if not format in available_formats:
+            raise Exception(
+                f"Cannot export to {format}. Available formats are {available_formats} .")
+        if format == 'json':
+            with open(Path(filename), 'w') as f:
+                json.dump(result_dct, f, indent=2)
+
     def show_enzymes(self):
         header = f"{'Glycogen Branching Enzyme (GBE)':^30} {'Glycogen Synthase (GS)':^30} {'Glycogen Debranching Enzyme (GDE)':^30} {'Glycogen Phosphorylase (GP)':^30}"
         res = f"{header}\n{self.gbe:^30} {self.gs:^30} {self.gde:^30} {self.gp:^30}"
@@ -606,3 +650,21 @@ class GlycogenStructure:
         header = f"{'#chains for GBE':^30} {'#chains for GS':^30} {'#chains for GDE':^30} {'#chains for GP':^30}"
         res = f"{header}\n{gbe_c:^30} {gs_c:^30} {gde_c:^30} {gp_c:^30}"
         return res
+
+    def get_parameters_as_dct(self):
+        import inspect
+        result = dict()
+        for k in inspect.getfullargspec(GlycogenStructure.__init__).args:
+            if k == 'self':
+                continue
+            if isinstance(self.__getattribute__(k), Model):
+                result[k] = str(self.__getattribute__(k))
+            else:
+                result[k] = self.__getattribute__(k)
+        return result
+
+    def get_chains_as_dct(self):
+        serializable = []
+        for c in self.chains:
+            serializable.append(c._to_serializable())
+        return {'chains': serializable}

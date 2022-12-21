@@ -19,6 +19,9 @@ class TestGlycogenStructure(TestCase):
     EXPECTED_INITIAL_GLUCOSE_LOCATIONS_C1 = [
         [0, 0, -11.87], [0, 0, -12.87], [0, 0, -13.87], [0, 0, -14.87], [0, 0, -15.87]]
 
+    OUTFILE_TMP_JSON = Path(f"{SCRIPTDIR}/testdata/tmp_out.json")
+    JSON_SNAPSHOT = Path(f"{SCRIPTDIR}/testdata/params_and_chains.json")
+
     def test_init(self):
         gs = GlycogenStructure(
             gbe=1.0,
@@ -170,7 +173,6 @@ class TestGlycogenStructure(TestCase):
         result = g.get_num_glucose_fixed()
         self.assertLess(result, before)
 
-
     def test_act_gde(self):
         # TODO: this is a very weak and lazy test...
         # should be stricter with forced parameters
@@ -201,3 +203,49 @@ class TestGlycogenStructure(TestCase):
         # proceed by GP, minus the number of debranched chains.
         self.assertEqual(num_glucose_after, expected_num_glucose)
         self.assertLess(num_chains_after, num_chains_before)
+
+    def test_export_parameters_back_to_dct(self):
+        with open(TestGlycogenStructure.PARAMS_PATH, 'r') as infile:
+            d = json.load(infile)
+        s = GlycogenStructure.from_dct(d)
+        print(s)
+        result = s.get_parameters_as_dct()
+        new_obj = GlycogenStructure.from_dct(result)
+        print(new_obj)
+        self.assertEqual(new_obj.__dict__, s.__dict__)
+
+    def test_export_to_file(self):
+        with open(TestGlycogenStructure.PARAMS_PATH, 'r') as infile:
+            d = json.load(infile)
+        s = GlycogenStructure.from_dct(d)
+        s.act_gs()
+        s.export_to_file(TestGlycogenStructure.OUTFILE_TMP_JSON, format='json')
+
+        #with open(TestGlycogenStructure.OUTFILE_TMP_JSON, 'r') as tmp:
+        #    print(tmp.read())
+
+        r = GlycogenStructure.from_json_file(
+            TestGlycogenStructure.OUTFILE_TMP_JSON, no_init=True)
+
+        self.assertEqual(s.chains, r.chains)
+
+
+    def test_import_from_json_no_init(self):
+        with open(TestGlycogenStructure.PARAMS_PATH, 'r') as infile:
+            d = json.load(infile)
+        s1 = GlycogenStructure.from_dct(d)
+
+        s2 = GlycogenStructure.from_json_file(
+            TestGlycogenStructure.JSON_SNAPSHOT, no_init=True)
+        s3 = GlycogenStructure.from_json_file(
+            TestGlycogenStructure.JSON_SNAPSHOT, no_init=False)
+        print(s1)
+        print(s2)
+        print(s1.chains)
+        print(s2.chains)
+        # no_init=True keeps the chains from the snapshot
+        self.assertNotEqual(s1.chains, s2.chains)
+        # no_init=False leads to overwriting the chains from the snapshot
+        self.assertEqual(s1.chains, s3.chains)
+
+        # self.assertTrue(False)

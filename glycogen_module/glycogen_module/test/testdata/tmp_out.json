@@ -1,0 +1,96 @@
+{
+  "gs": 0.2,
+  "gbe": 1.0,
+  "gde": 0.0,
+  "gp": 0.0,
+  "l_gs_min": 2,
+  "l_gbe_spacing": 1,
+  "l_gbe_transferred": 3,
+  "l_gbe_leftover": 3,
+  "model_for_gbe": "flexible_location_model",
+  "radius_of_glucose_sphere": 5.4,
+  "radius_of_gn_core": 11.87,
+  "chains": [
+    {
+      "id": 0,
+      "substrate_status": [
+        "GP_SUBSTRATE",
+        "GS_SUBSTRATE"
+      ],
+      "generation": 0,
+      "mother_id": null,
+      "daughters_ids": [],
+      "daughters_positions": [],
+      "glucose_positions": [
+        [
+          0,
+          0,
+          11.87
+        ],
+        [
+          0,
+          0,
+          12.87
+        ],
+        [
+          0,
+          0,
+          13.87
+        ],
+        [
+          0,
+          0,
+          14.87
+        ],
+        [
+          0,
+          0,
+          15.87
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "substrate_status": [
+        "GS_SUBSTRATE",
+        "GP_SUBSTRATE"
+      ],
+      "generation": 0,
+      "mother_id": null,
+      "daughters_ids": [],
+      "daughters_positions": [],
+      "glucose_positions": [
+        [
+          0,
+          0,
+          -11.87
+        ],
+        [
+          0,
+          0,
+          -12.87
+        ],
+        [
+          0,
+          0,
+          -13.87
+        ],
+        [
+          0,
+          0,
+          -14.87
+        ],
+        [
+          0,
+          0,
+          -15.87
+        ],
+        [
+          6.123233995736766e-17,
+          0.0,
+          -16.869999999999997
+        ]
+      ]
+    }
+  ]
+}
