@@ -9,7 +9,6 @@ class TestPrivMethods(TestCase):
     SCRIPTDIR = Path(__file__).parent.resolve()
     PARAMS_PATH = Path(f"{SCRIPTDIR}/testdata/parameters_1.json")
 
-    
     def test_act_gbe_once(self):
         g = GlycogenStructure(gs=0, gbe=0, gde=0, gp=0, l_gs_min=2, l_gbe_spacing=2, l_gbe_leftover=2, l_gbe_transferred=2,
                               model_for_gbe='flexible_location', radius_of_glucose_sphere=5.4, radius_of_gn_core=11.87)
@@ -43,3 +42,24 @@ class TestPrivMethods(TestCase):
         ), 5)
         self.assertEqual(g.get_chain_by_id(g.get_chain_by_id(0).daughters_ids[0]).get_num_glucose_positions(
         ), 2)
+
+
+class TestMiscMethods(TestCase):
+    SCRIPTDIR = Path(__file__).parent.resolve()
+    PREMADE_G = Path(f"{SCRIPTDIR}/testdata/test_a_b_zero.json")
+    PREMADE_G_7_CHAINS = Path(f"{SCRIPTDIR}/testdata/test_7chains.json")
+
+    def test_ab_ratio_zero(self):
+        g = GlycogenStructure.from_json_file(TestMiscMethods.PREMADE_G)
+        print(g)
+        with pytest.raises(Exception) as e:
+            print(g.get_a_b_ratio())
+            self.assertRaises(expected_exception=Exception)
+        assert str(
+            e.value) == "Cannot return A:B ratio, no branches with daughters present."
+
+    def test_ab_ratio_7chains(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_G_7_CHAINS, no_init=True)
+        print(g)
+        self.assertEqual(g.get_a_b_ratio(), 0.4)

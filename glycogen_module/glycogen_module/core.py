@@ -651,6 +651,16 @@ class GlycogenStructure:
         res = f"{header}\n{gbe_c:^30} {gs_c:^30} {gde_c:^30} {gp_c:^30}"
         return res
 
+    def get_a_b_ratio(self) -> float:
+        """ Return ratio of the number of chains without daughter chains 
+        over number of chains that do have at least one daughter chain """
+        A = len([c for c in self.chains if c.get_num_daughters() == 0])
+        B = len([c for c in self.chains if c.get_num_daughters() != 0])
+        if B == 0:
+            raise Exception(
+                "Cannot return A:B ratio, no branches with daughters present.")
+        return A/B
+
     def get_parameters_as_dct(self):
         import inspect
         result = dict()
