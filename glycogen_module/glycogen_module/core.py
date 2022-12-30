@@ -9,7 +9,7 @@ from pathlib import Path
 import random
 import sys
 
-from glycogen_module.utils import angle3Dchain
+from glycogen_module.utils import angle3Dchain, get_volume_of_sphere
 import numpy as np
 logger = logging.getLogger(__name__)
 
@@ -652,7 +652,7 @@ class GlycogenStructure:
         return res
 
     def get_a_b_ratio(self) -> float:
-        """ Return ratio of the number of chains without daughter chains 
+        """ Return ratio of the number of chains without daughter chains
         over number of chains that do have at least one daughter chain """
         A = len([c for c in self.chains if c.get_num_daughters() == 0])
         B = len([c for c in self.chains if c.get_num_daughters() != 0])
@@ -660,6 +660,78 @@ class GlycogenStructure:
             raise Exception(
                 "Cannot return A:B ratio, no branches with daughters present.")
         return A/B
+
+    def get_avg_chain_length(self) -> float:
+        """Returns the average chain length."""
+        if not self.chains:
+            raise Exception(
+                "Cannot return average chain length. No chains are present.")
+        num_glucose_positions = [c.get_num_glucose_positions()
+                                 for c in self.chains]
+        avg = sum(num_glucose_positions)/len(num_glucose_positions)
+        return avg
+
+    def get_branching_degree(self) -> float:
+        """ TODO: doc """
+        number_16 = self.get_num_chains() - 1
+        number_14 = self.get_num_chains()*(self.get_avg_chain_length()-1)
+        return number_16/number_14
+
+    def get_last_gen_index(self) -> int:
+        """ Return highest generation index """
+        generations = [c.generation for c in self.chains]
+        return max(generations)
+
+    def get_occupancy(self) -> int:
+        """ Return ratio of volume effectively
+        occupied by all the glucose units
+        in glycogen granule : volume of glycogen granule """
+
+        # v = 1.33*0.24
+        v = 1.33 * GlycogenStructure.L  # TODO: Why 1.33 and not 4/3? 
+
+
+        granule_radius = self.get_radius(unit='nm')
+        v_granule = get_volume_of_sphere(radius=granule_radius)
+
+        # return self.number_of_glucose_fixed()*v/(4/3*math.pi*r_g**3)
+        return self.get_num_glucose_fixed()*v / v_granule
+
+    def get_radius(self, unit: str) -> float:
+        """ TODO: Documentation.
+        unit can be 'adim' or 'nm'.
+        """
+        if unit == 'adim':
+            alpha = 1.0  # ?
+        else:
+            alpha = 0.24  # GlycogenStructure.L ?
+
+        pos_x, pos_y, pos_z = self.get_glucose_positions_by_dimension()
+
+        # mean values for each dimension
+        mean_x, mean_y, mean_z = [np.mean(p) for p in (pos_x, pos_y, pos_z)]
+
+        length = len(pos_x)
+
+        r2 = 1.0/length*sum((pos_x-mean_x)**2
+                           + (pos_y-mean_y)**2
+                           + (pos_z-mean_z)**2)
+
+        return alpha*r2**0.5
+
+    def get_glucose_positions_by_dimension(self) -> tuple[list[float]]:
+        """ Return glucose positions of all chains for each dimension (x,y,z) . """
+        px = []
+        py = []
+        pz = []
+        for c in self.chains:
+            for position in c.glucose_positions:
+                (x, y, z) = position
+                px.append(x)
+                py.append(y)
+                pz.append(z)
+
+        return (px, py, pz)
 
     def get_parameters_as_dct(self):
         import inspect

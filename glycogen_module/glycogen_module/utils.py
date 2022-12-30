@@ -23,3 +23,8 @@ def angle3Dchain(liste):
     else:
         theta = 2*math.pi-math.acos(x/(x*x+y*y)**0.5)
     return theta, phi
+
+
+def get_volume_of_sphere(radius: float) -> float:
+    """ Return volume of a sphere given radius """
+    return 4/3 * math.pi * radius**3
