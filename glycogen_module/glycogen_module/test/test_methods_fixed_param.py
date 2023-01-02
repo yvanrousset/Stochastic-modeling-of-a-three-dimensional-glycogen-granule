@@ -9,7 +9,6 @@ class TestPrivMethods(TestCase):
     SCRIPTDIR = Path(__file__).parent.resolve()
     PARAMS_PATH = Path(f"{SCRIPTDIR}/testdata/parameters_1.json")
 
-    
     def test_act_gbe_once(self):
         g = GlycogenStructure(gs=0, gbe=0, gde=0, gp=0, l_gs_min=2, l_gbe_spacing=2, l_gbe_leftover=2, l_gbe_transferred=2,
                               model_for_gbe='flexible_location', radius_of_glucose_sphere=5.4, radius_of_gn_core=11.87)
@@ -43,3 +42,100 @@ class TestPrivMethods(TestCase):
         ), 5)
         self.assertEqual(g.get_chain_by_id(g.get_chain_by_id(0).daughters_ids[0]).get_num_glucose_positions(
         ), 2)
+
+
+class TestMiscMethods(TestCase):
+    SCRIPTDIR = Path(__file__).parent.resolve()
+    PARAMS_PATH = Path(f"{SCRIPTDIR}/testdata/parameters_1.json")
+    PREMADE_G = Path(f"{SCRIPTDIR}/testdata/test_a_b_zero.json")
+    PREMADE_G_7_CHAINS = Path(f"{SCRIPTDIR}/testdata/test_7chains.json")
+    PREMADE_TAB1 = Path(
+        f"{SCRIPTDIR}/testdata/g_N2000_gamma_0.2_1.0_exported_tab1_seed123.json")
+
+    def test_ab_ratio_zero(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_G, no_init=True)
+        print(g)
+        with pytest.raises(Exception) as e:
+            print(g.get_a_b_ratio())
+            self.assertRaises(expected_exception=Exception)
+        assert str(
+            e.value) == "Cannot return A:B ratio, no branches with daughters present."
+
+    def test_ab_ratio_7chains(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_G_7_CHAINS, no_init=True)
+        print(g)
+        self.assertEqual(g.get_a_b_ratio(), 0.4)
+
+    def test_ab_ratio_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        expected = 0.828125
+        self.assertEqual(g.get_a_b_ratio(), expected)
+
+    def test_avg_chain_length_init(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PARAMS_PATH)
+        print(g)
+        result = g.get_avg_chain_length()
+        expected = 5.0
+        self.assertEqual(result, expected)
+
+    def test_avg_chain_length(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_G_7_CHAINS, no_init=True)
+        print(g)
+        result = g.get_avg_chain_length()
+        expected = 8.571428571428571
+        self.assertEqual(result, expected)
+
+    def test_avg_chain_length_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        result = g.get_avg_chain_length()
+        expected = 8.547008547008547
+        self.assertEqual(result, expected)
+
+    def test_branching_degree(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_G_7_CHAINS, no_init=True)
+        print(g)
+        result = g.get_branching_degree()
+        expected = 0.11320754716981132
+        self.assertEqual(result, expected)
+
+    def test_branching_degree_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        result = g.get_branching_degree()
+        expected = 0.1319365798414496
+        self.assertEqual(result, expected)
+
+    def test_last_gen_index_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        result = g.get_last_gen_index()
+        expected = 9
+        self.assertEqual(result, expected)
+
+    def test_occupancy_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        result = g.get_occupancy()
+        expected = 0.2958106823848145
+        self.assertAlmostEqual(result, expected)
+
+    def test_radius_tab1(self):
+        g = GlycogenStructure.from_json_file(
+            TestMiscMethods.PREMADE_TAB1, no_init=True)
+        print(g)
+        result = g.get_radius(unit='nm')
+        expected = 8.016721661194044
+        self.assertAlmostEqual(result, expected)
+
